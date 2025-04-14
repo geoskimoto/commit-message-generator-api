@@ -1,0 +1,7 @@
+datasets==3.5.0
+fastapi==0.115.12
+Flask==3.1.0
+pydantic==2.11.3
+torch==2.6.0
+transformers==4.51.3
+uvicorn==0.34.1
