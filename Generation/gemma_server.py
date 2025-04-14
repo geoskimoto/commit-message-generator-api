@@ -1,11 +1,3 @@
-# Gemma server for generating commit messages from diffs
-# You need to open gemma on huggingface and accept terms to use it
-# Edit api key setting on huggingface.co to allow access to staged models (check the boxes)
-
-# This model is very slow and requires a lot of memory
-
-
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
