@@ -20,21 +20,50 @@ def split_diffs_by_file(diff_text: str) -> dict:
     current_diff = []
 
     for line in diff_text.splitlines():
-        if line.startswith("diff --git"):
+        if line.startswith('--- '):
+            # Save previous file's diff if it exists
             if current_file and current_diff:
                 files[current_file] = "\n".join(current_diff)
-            parts = line.split(" ")
-            if len(parts) >= 4:
-                current_file = parts[2][2:]  # strip 'a/' prefix
-                current_diff = [line]
-        elif current_file:
+                current_diff = []
+
+            # Extract filename from '--- ./filename'
+            path = line.split()[1]
+            current_file = path.lstrip("./")  # Remove './' prefix if present
+            current_diff = [line]
+        elif current_diff is not None:
             current_diff.append(line)
 
+    # Save the last file's diff
     if current_file and current_diff:
         files[current_file] = "\n".join(current_diff)
 
     print(f"📂 Found diffs for {len(files)} files.")
     return files
+
+# ORIGINAL VERSION FOR REFERENCE:
+# def split_diffs_by_file(diff_text: str) -> dict:
+#     print("🔍 Splitting diff into individual files...")
+#     files = {}
+#     current_file = None
+#     current_diff = []
+#
+#     for line in diff_text.splitlines():
+#         if line.startswith("diff --git"):
+#             if current_file and current_diff:
+#                 files[current_file] = "\n".join(current_diff)
+#             parts = line.split(" ")
+#             if len(parts) >= 4:
+#                 current_file = parts[2][2:]  # strip 'a/' prefix
+#                 current_diff = [line]
+#         elif current_file:
+#             current_diff.append(line)
+#
+#     if current_file and current_diff:
+#         files[current_file] = "\n".join(current_diff)
+#
+#     print(f"📂 Found diffs for {len(files)} files.")
+#     return files
+
 
 def clean_diff(diff: str) -> str:
     """
@@ -56,7 +85,7 @@ def clean_diff(diff: str) -> str:
 def generate_commit_message_for_file(diff: str, filename: str) -> str:
     print(f"✏️ Generating commit message for: {filename} (diff length: {len(diff)} chars)")
     cleaned_diff = clean_diff(diff)
-
+    print(f'cleaned_diff: {clean_diff}')
     # prompt = (
     #     "You are a Git commit message generator. "
     #     "Respond only with a one-line Git commit message in imperative mood. "
@@ -102,6 +131,7 @@ def generate_commit_messages():
     try:
         start_total = time.time()
         data = request.get_json()
+        print(f'DATA: {data}')
         if not data or "diff" not in data:
             return jsonify({"error": "Missing 'diff' in request"}), 400
 

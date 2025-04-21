@@ -27,8 +27,8 @@ for original_file in "$INPUT_DIR"/*original*.js; do
     echo "Generating diff for $original_file and $changed_file..."
     diff_output=$(diff -u "$original_file" "$changed_file")
 
-    echo "Diff output:"
-    echo "$diff_output"
+    # echo "Diff output:"
+    # echo "$diff_output"
 
     if [ -z "$diff_output" ]; then
         echo "No changes detected. Skipping."
