@@ -1,1 +1,1 @@
-javascript/feature_addition_original3.js: "Added createdAt and markComplete methods"
+javascript/feature_addition_original3.js: "Added createdAt and completedAt properties to Tasks"

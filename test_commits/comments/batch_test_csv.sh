@@ -3,10 +3,10 @@
 # Root folders
 ROOT_DIR="."  # Inside test_commits
 OUTPUT_BASE="test_outputs"
-CSV_FILE="$OUTPUT_BASE/commit_messages.csv"
+CSV_FILE="$OUTPUT_BASE/comments_tests_commit_messages.csv"
 
 # Subdirectories to test
-SUBFOLDERS=("java" "javascript" "python")
+SUBFOLDERS=("with_comments" "without_comments")
 
 # Create base output folder and CSV file
 mkdir -p "$OUTPUT_BASE"

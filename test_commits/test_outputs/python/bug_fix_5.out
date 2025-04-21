@@ -1,0 +1,1 @@
+python/bug_fix_original5.py: "Added ValueError checks for None and empty list, removed print statements for ZeroDivisionError and IndexError"

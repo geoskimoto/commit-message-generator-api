@@ -1,0 +1,1 @@
+with_comments/comments_original2.js: "Added check for input being an array and used reduce to sum elements"
