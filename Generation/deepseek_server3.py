@@ -1,18 +1,17 @@
 from flask import Flask, request, jsonify
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import time
 
 app = Flask(__name__)
 
-print("🚀 Loading microsoft/phi-1_5 model...")
-model_name = "microsoft/phi-1_5"
+print("\U0001F680 Loading DeepSeek-Coder-Instruct model...")
+model_name = "deepseek-ai/deepseek-coder-1.3b-instruct"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name, trust_remote_code=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
-print("✅ Model loaded on", device)
-
+print("✅ DeepSeek-Coder-Instruct model loaded on", device)
 
 # ORIGINAL VERSION FOR REFERENCE:
 def split_diffs_by_file(diff_text: str) -> dict:
@@ -41,32 +40,42 @@ def split_diffs_by_file(diff_text: str) -> dict:
 
 def clean_diff(diff: str) -> str:
     """
-    Clean the diff by keeping only meaningful lines (no metadata).
-    Keep + and - prefixes to indicate changes.
+    Annotate diff lines as [ADDED] or [REMOVED] for clearer model guidance.
+    Strips hunk metadata and keeps only meaningful changes.
     """
     lines = []
     for line in diff.splitlines():
-        if line.startswith("@@") or line.startswith("+++ ") or line.startswith("--- "):
+        if line.startswith("@@"):
             continue
-        if line.startswith("+") or line.startswith("-"):
-            lines.append(line)
+        if line.startswith("+") and not line.startswith("+++"):
+            lines.append("[ADDED] " + line[1:].strip())
+        elif line.startswith("-") and not line.startswith("---"):
+            lines.append("[REMOVED] " + line[1:].strip())
     return "\n".join(lines)
+
 
 
 def generate_commit_message_for_file(diff: str, filename: str) -> str:
     print(f"✏️ Generating commit message for: {filename} (diff length: {len(diff)} chars)")
     cleaned_diff = clean_diff(diff)
-
+    print(f'cleaned_diff: {clean_diff}')
+    # prompt = (
+    #     "You are a Git commit message generator. "
+    #     "Respond only with a one-line Git commit message in imperative mood. "
+    #     "Do not include explanations, prefixes, or formatting. "
+    #     "All lines below are changes — either additions or removals. "
+    #     "Each line starts with [ADDED] or [REMOVED]. Summarize what was added or removed accordingly.\n\n"
+    #     f"{cleaned_diff}\n"
+    #     "Commit message:"
+    # )
     prompt = (
-        "Below is a code diff and its corresponding commit message.\n"
-        "Example:\n"
-        "Diff:\n"
-        "-# Get user info\n"
-        "+# Retrieve user profile information\n"
-        "Commit message:\nUpdate user info comment for clarity\n\n"
-        "Diff:\n"
+        "### SYSTEM INSTRUCTION ###\n"
+        "Below is a list of ONLY added and removed lines. There are NO unchanged lines.\n"
+        "Each line is prefixed with either [ADDED] or [REMOVED].\n\n"
+        "Generate a one-line Git commit message describing what functionality was added or removed.\n"
+        "Ignore functions or print statements that are still present in the file — focus ONLY on the removed or added lines.\n\n"
         f"{cleaned_diff}\n"
-        "Commit message:\n"
+        "Commit message:"
     )
 
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
@@ -84,15 +93,11 @@ def generate_commit_message_for_file(diff: str, filename: str) -> str:
     end_time = time.time()
 
     decoded = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
-    lines = decoded.split("Commit message:\n")
-    message = lines[-1].strip().splitlines()[0] if len(lines) > 1 else decoded.splitlines()[0]
+    message = decoded.split("Commit message:")[-1].strip().splitlines()[0]
 
     print(f"⏱️ Generation for {filename} took {round(end_time - start_time, 2)}s")
     print(f"✅ Commit message for {filename}: {message}")
     return message
-
-
-
 
 @app.route("/generate", methods=["POST"])
 def generate_commit_messages():
