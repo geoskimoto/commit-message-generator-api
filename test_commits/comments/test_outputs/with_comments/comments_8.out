@@ -1,1 +1,1 @@
-with_comments/comments_original8.js: "Removed unnecessary functions and added validation and database save"
+with_comments/comments_original8.js: "Removed unnecessary function addTask(name) and added new functions addTask(name, priority) and saveToDatabase()"
