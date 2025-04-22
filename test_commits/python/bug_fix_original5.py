@@ -23,5 +23,5 @@ if __name__ == "__main__":
 
     data2 = []
     stats2 = StatsCalculatorOriginal(data2)
-    print(stats2.get_average())  # Will raise ZeroDivisionError
-    print(stats2.get_median())   # Will raise IndexError
+    print(stats2.get_average())
+    print(stats2.get_median())
