@@ -105,7 +105,7 @@ def generate_commit_message_for_file(diff: str, filename: str) -> str:
         "Commit message:"
     )
 
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
+    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=1024).to(device)
     input_ids = inputs["input_ids"]
     attention_mask = inputs["attention_mask"]
 
