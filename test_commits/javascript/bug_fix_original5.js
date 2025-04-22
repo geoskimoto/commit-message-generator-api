@@ -25,5 +25,5 @@ console.log(stats1.getMedian());
 
 const data2 = [];
 const stats2 = new StatsCalculator(data2);
-console.log(stats2.getAverage()); // Bug: reduce on empty array
-console.log(stats2.getMedian());  // Bug: accessing undefined elements
+console.log(stats2.getAverage()); 
+console.log(stats2.getMedian());  
